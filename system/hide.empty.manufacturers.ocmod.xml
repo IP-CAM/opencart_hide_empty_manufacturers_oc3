@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>Hide Empty Manufacturers</name>
+    <version>1.0.3</version>
+    <author>AGriboed | alexv1rs@gmail.com</author>
+    <link>http://v1rus.ru</link>
+	<code>hideemptymanufacturers</code>
+    <file path="catalog/model/catalog/manufacturer.php">
+        <operation>
+            <search><![CDATA[(int)$this->config->get('config_store_id') . "']]></search>
+            <add position="replace"><![CDATA[(int)$this->config->get('config_store_id') . "' AND ((SELECT COUNT(*) FROM " . DB_PREFIX . "product as p WHERE p.manufacturer_id=m.manufacturer_id AND p.status='1')>0)]]></add>
+        </operation>
+    </file>
+    <file path="admin/model/catalog/manufacturer.php">
+        <operation>
+            <search><![CDATA[SELECT * FROM " . DB_PREFIX . "manufacturer"]]></search>
+            <add position="replace"><![CDATA[SELECT m.*,(SELECT COUNT(*) FROM " . DB_PREFIX . "product as p WHERE p.manufacturer_id=m.manufacturer_id) as products_count FROM " . DB_PREFIX . "manufacturer m"]]></add>
+        </operation>
+    </file>
+    <file path="admin/language/*/catalog/manufacturer.php">
+        <operation>
+            <search><![CDATA[$_['column_sort_order']]]></search>
+            <add position="before"><![CDATA[
+$_['column_products_count']       = 'Products Count';
+    ]]></add>
+        </operation>
+    </file>
+    <file path="admin/controller/catalog/manufacturer.php">
+        <operation>
+            <search><![CDATA['name'            => $result['name'],]]></search>
+            <add position="after"><![CDATA[
+'products_count'            => $result['products_count'],
+    ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$data['text_list'] = $this->language->get('text_list');]]></search>
+            <add position="after"><![CDATA[
+$data['column_products_count'] = $this->language->get('column_products_count');
+    ]]></add>
+        </operation>
+    </file>
+    <file path="admin/view/template/catalog/manufacturer_list.tpl">
+        <operation>
+            <search><![CDATA[<td class="text-right"><?php echo $column_action; ?></td>]]></search>
+            <add position="before"><![CDATA[
+<td class="text-right"><?php echo $column_products_count; ?></td>
+    ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<td class="text-right"><?php echo $manufacturer['sort_order']; ?></td>]]></search>
+            <add position="after"><![CDATA[
+<td class="text-right"><?php echo $manufacturer['products_count']; ?></td>
+    ]]></add>
+        </operation>
+    </file>
+</modification>
